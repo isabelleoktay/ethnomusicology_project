@@ -38,13 +38,14 @@ def count_pattern_in_score(score, pattern):
     return first_quarter_count, middle_count, last_quarter_count
 
 
-def count_all_patterns(score, patterns):
+def count_all_patterns(score, patterns, pattern_counter):
     '''
     Iterate through all the different patterns (centos) of a score to count their prevalence.
 
     PARAMETERS: 
         - score (music21.stream.Stream): A music21 Stream object representing the score.
         - patterns (list of list of str): A list containing all centos/patterns as lists of pitch names.
+        - pattern_counter (function): A function that determines how to segment and count centos for each score
 
     RETURNS:    
         pattern_counts (dict): A dictionary containing the counts of each pattern.
@@ -53,19 +54,20 @@ def count_all_patterns(score, patterns):
 
     for pattern in patterns:
         pattern_str = ''.join(pattern)
-        pattern_count = count_pattern_in_score(score, pattern)
+        pattern_count = pattern_counter(score, pattern)
 
         pattern_counts[pattern_str] = pattern_count
 
     return pattern_counts
 
-def count_all_patterns_wrapper(scores, patterns):
+def count_all_patterns_wrapper(scores, patterns, pattern_counter):
     '''
     Count all centos in a pattern array from the score sections.
 
     PARAMETERS: 
         - scores (dict): A dictionary where keys are identifiers for scores and values are music21 Stream objects representing the scores.
         - patterns (list of list of str): A list containing all centos/patterns as lists of pitch names.
+        - pattern_counter (function): A function that determines how to segment and count centos for each score
     
     RETURNS:   
         all_centos_counts (dict): A dictionary containing the centos counts for each score, section, sana, and line.
@@ -89,7 +91,7 @@ def count_all_patterns_wrapper(scores, patterns):
                     sana_score = sana['score']
 
                     which_sana = 'section_' + str(section_count) + '_sana_' + str(sana_count)
-                    sana_pattern_counts = count_all_patterns(sana_score, patterns)
+                    sana_pattern_counts = count_all_patterns(sana_score, patterns, pattern_counter)
                     all_centos_counts[mbid]['sanai'][which_sana] = sana_pattern_counts
 
                     line_count = 0
@@ -98,7 +100,7 @@ def count_all_patterns_wrapper(scores, patterns):
                         line_score = line['score']
 
                         which_line = which_sana + '_line_' + str(line_count)
-                        line_pattern_counts = count_all_patterns(line_score, patterns)
+                        line_pattern_counts = count_all_patterns(line_score, patterns, pattern_counter)
                         all_centos_counts[mbid]['lines'][which_line] = line_pattern_counts
 
     return all_centos_counts
@@ -168,7 +170,7 @@ def count_distribution_over_dataset(cumulative_centos_positions):
     return merged_data
 
 
-def get_centos_counts_per_tab_mizan_score(centos_counts, scores_mizan_dict, centos_list_names = CENTOS_LIST_NAMES):
+def get_centos_counts_per_tab_mizan_score(centos_counts, scores_mizan_dict, centos_positions_counter, centos_list_names = CENTOS_LIST_NAMES):
     '''
     Process centos counts data for visualization.
 
@@ -192,14 +194,14 @@ def get_centos_counts_per_tab_mizan_score(centos_counts, scores_mizan_dict, cent
             # cumulative counts and graphs (optional) for sanai level
             sanai_centos_counts_dict = count_data.get('sanai', {})
             plot_title = centos_list_names[i] + ': sanai of ' + tab_mizan_name 
-            sanai_centos_position_counts_df = count_centos_positions(sanai_centos_counts_dict)
+            sanai_centos_position_counts_df = centos_positions_counter(sanai_centos_counts_dict)
             cumulative_sanai_centos_positions[plot_title] = sanai_centos_position_counts_df
             #plot_centos_distribution(sanai_centos_position_counts_df, plot_title)
 
             # cumulative counts and graphs (optional) for line level
             line_centos_counts_dict = count_data.get('lines', {})
             plot_title = centos_list_names[i] + ': lines of ' + tab_mizan_name 
-            line_centos_position_counts_df = count_centos_positions(line_centos_counts_dict)
+            line_centos_position_counts_df = centos_positions_counter(line_centos_counts_dict)
             cumulative_line_centos_positions[plot_title] = line_centos_position_counts_df
             # plot_centos_distribution(line_centos_position_counts_df, plot_title)
 
