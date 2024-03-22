@@ -2,7 +2,7 @@ from scipy.stats import chi2_contingency
 from statsmodels.stats.contingency_tables import cochrans_q
 import pandas as pd
 
-def chi_squared_test(data):
+def chi_squared_test_10(data):
     """
     Test the statistical significance of pattern occurrence in different positions.
 
@@ -34,8 +34,7 @@ def chi_squared_test(data):
     
     return pd.DataFrame(chi_results)
 
-
-def cochrans_q_test(df):
+def cochrans_q_test(df, significance_val=0.05):
     """
     Performs Cochran's Q test on related samples.
 
@@ -46,11 +45,21 @@ def cochrans_q_test(df):
         significance_val (float): Significance level for the test (default: 0.05).
 
     Returns:
-        tuple: Cochran's Q statistic, p-value, and significance.
-               The test is significant if p-value < significance_val.
+        DataFrame: Cochran's Q statistic, p-value, degrees of freedom, and significance.
+                   The test is significant if p-value < significance_val.
     """
     only_counts = df.drop(columns=['Pattern'])
-    result = cochrans_q(only_counts)
+    result_tuple = cochrans_q(only_counts, return_object=False)
 
-    return result
+    # Convert tuple to a list of lists
+    data = [list(result_tuple)]
+    columns = ['q_stat', 'pvalue', 'deg_f']
+
+    # Create DataFrame
+    result_df = pd.DataFrame(data, columns=columns)
+
+    # Add a column indicating if the p-value is less than the significance value
+    result_df['Significance'] = result_df['pvalue'] < significance_val
+
+    return result_df
 
