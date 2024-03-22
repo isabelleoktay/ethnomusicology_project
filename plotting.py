@@ -58,7 +58,7 @@ def plot_centos_distribution(cumulative_df, plot_title, plots_folder=PLOTS_PATH,
     plt.show()
 
 
-def plot_complete_distribution_trend(total_counts, level, plots_folder=PLOTS_PATH):
+def plot_complete_distribution_trend(total_counts, level, distribution_type, plots_folder=PLOTS_PATH):
     """
     Plot the development of counts for start, middle, and end positions on a line chart.
 
@@ -68,7 +68,7 @@ def plot_complete_distribution_trend(total_counts, level, plots_folder=PLOTS_PAT
         plots_folder (str): path to save plots into
     """
 
-    plot_title = f'Distribution of Centos at the Start, Middle, and End Positions at {level} level'
+    plot_title = f'{distribution_type} Distribution of Centos Positions at {level} level'
 
     # Convert the dictionary to a pandas DataFrame
     df = pd.DataFrame(total_counts, index=[0])
